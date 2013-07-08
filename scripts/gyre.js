@@ -18,9 +18,22 @@ var quart = Math.PI / 2;
 
 ctx.lineWidth = 2;
 ctx.strokeStyle = '#FFF';
-ctx.shadowOffsetX = 0;
-ctx.shadowOffsetY = 0;
-ctx.shadowBlur = 10;
+
+function animate(cur) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.arc(x, y, radius*cur, -(quart), ((circ) * cur) - quart, false);
+    ctx.stroke();
+
+    curPerc++;
+    if (curPerc < endPercent) {
+        requestAnimationFrame(function () {
+            animate(curPerc / endPercent);
+        });
+    }
+}
+
+animate();
 
 /*
 function refresh(ctx, width, height, frame_number){
@@ -49,21 +62,7 @@ function refresh(ctx, width, height, frame_number){
     ctx.fillText('a', 
 	ctx.fill();
     }
-  
 }
 */
 
-function animate(current) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-    ctx.arc(x, y, radius*current, -(quart), ((circ) * current) - quart, false);
-    ctx.stroke();
-    curPerc++;
-    if (curPerc < endPercent) {
-        requestAnimationFrame(function () {
-            animate(curPerc / endPercent);
-        });
-    }
-}
 
-animate();
