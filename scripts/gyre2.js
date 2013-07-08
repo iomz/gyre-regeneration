@@ -34,7 +34,7 @@ function getString(file) {
     return xmlhttp.responseText;
 }
 
-var list = ['regeneration','meme','nuclear'];
+var list = ['regeneration','meme','nuclear','brain','technology','universe'];
 var genre = list[Math.floor(Math.random()*list.length)];
 var str = getString('data/'+genre);
 var strlen = str.length;
