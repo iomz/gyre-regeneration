@@ -61,7 +61,7 @@ var allign = 200;
 // Interval between the arcs
 var interval = 20;
 
-var outerRad = 350;
+var outerRad = 280;
 
 // Display animation info 
 document.getElementById('info').innerHTML="Genre: " + genre + ", Interval: " + interval.toString() + ", Outer radius: " + outerRad.toString() + ", &pi;: " + angle.toString();

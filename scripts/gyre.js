@@ -1,3 +1,9 @@
+/*
+    GYRE! Word Reflector Reproduction
+    Coded by Iori Mizutani (iomz@sfc.wide.ad.jp)
+    Last modified: 2013/07/12
+*/
+
 // requestAnim shim layer by Paul Irish
 window.requestAnimFrame = (function(){
       return  window.requestAnimationFrame       || 
@@ -10,17 +16,101 @@ window.requestAnimFrame = (function(){
         };
 })();
 
-var canvas, ctx, radius, angle, interval, offset, span, round, audio, ogg, mp3, fondSize;
+var canvas, ctx, outerRad, span, interval, fondSize, fontReduc, limit;
+var radius, start, offset, round, allign;
+var audio, ogg, mp3;
 var list = ['regeneration','meme','nuclear','brain','technology','universe'];
 var genre = list[Math.floor(Math.random()*list.length)];
 var str = new String();
-var start = new Date().getTime();
 var colors = new Array();
 
 init();
+canvasInit();
+audioInit();
 animate();
 
-function init(){
+function init() {
+    canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 600;
+    ctx = canvas.getContext('2d');
+    ctx.translate(canvas.width/2*Math.random()+canvas.width/4, canvas.height/3*Math.random()+canvas.height/3);
+    document.body.appendChild(canvas);
+
+    // Black and white gradation array
+    for(var i=7; 0<=i; i--){
+        var color_str = '#';
+        for(var j=0; j<6; j++){
+            color_str += (2*i).toString(16);
+        }
+        colors.push(color_str);
+    }
+
+    // Load string
+    str = getString('data/'+genre);
+
+    // Limit for respawn
+    limit = 5;
+
+    // Text printing speed
+    span = 50;
+
+    // Initial radius
+    outerRad = 400;
+
+    // Font reduction
+    fontReduc = 0.7;
+ }
+
+function canvasInit() {
+    // Canvas setup
+    ctx.rotate(2*Math.PI*Math.random());
+    offset = 0;
+    round = 0;
+
+    // Initialize the white color
+    ctx.fillStyle = '#FFFFFF';
+
+    // Font initialization
+    fontSize = Math.floor(8*Math.random() + 8);
+    ctx.font = fontSize.toString() + 'pt serif';
+
+    // Interval initialization
+    interval = 0.6*Math.random() + 0.2;
+ 
+    // Outmost radian for the spiral
+    //outerRad -= 10*Math.random() + fontSize;
+    //radius = outerRad;
+    radius = outerRad*Math.random() + 200;
+
+    // Number of characters on one round
+    allign = calcAllign(radius);
+
+    limit = calcLimit();
+
+    ctx.save();
+
+    start = new Date().getTime();
+}
+
+function calcAllign(r) {
+    return Math.floor(2 * Math.PI * r / fontSize);
+}
+
+function calcLimit() {
+    var r = radius;
+    var rc = 1;
+    do {
+        for(var i=0; i<calcAllign(r); i++){
+            r -= (rc+1)*interval;
+            if (r<100) return rc;
+        }
+        rc++;
+    } while (100<calcAllign(r));
+    return rc;
+}
+
+function audioInit(){
     // Audio setup
     audio = document.createElement('audio');
     ogg = document.createElement('source');
@@ -31,76 +121,41 @@ function init(){
     mp3.setAttribute('src',"audio/"+genre+".mp3");
     mp3.setAttribute('type',"audio/mp3");
     audio.play();
-
-    canvas = document.createElement('canvas');
-    canvas.width = 1000;
-    canvas.height = 1000;
-    ctx = canvas.getContext('2d');
-    document.body.appendChild(canvas);
-
-    // Canvas setup
-    ctx.translate(canvas.width / 2 - 20, canvas.height / 2 - 20);
-    ctx.rotate(2*Math.PI*Math.random());
-    offset = 0;
-    round = 0;
-
-    // Initialize the white color
-    ctx.fillStyle = '#FFFFFF';
-
-    // Font initialization
-    fontSize = 13;
-    ctx.font = fontSize.toString() + 'pt serif';
-
-    // Angle of one round
-    angle = Math.PI * 2;
- 
-    // Number of characters on one round
-    allign = 200;
- 
-    // Interval between the rounds
-    interval = 20;
-
-    // Text printing speed
-    span = 50;
-
-    // Outmost radian for the spiral
-    radius = 400;
-
-    // Load string
-    str = getString('data/'+genre);
-
-    // Black and white gradation array
-    for(var i=31; 0<=i; i--){
-        var color_str = '#';
-        for(var j=0; j<6; j++){
-            if(i%2==0 && j%2==1)
-                color_str += parseInt('7').toString(16);
-            else
-                color_str += (i/2).toString(16);
-        }
-        colors.push(color_str);
-    }
-    ctx.save();
 }
 
 function animate() {
     var time = new Date().getTime();
-    if(Math.floor((time-start)/span) - offset == 1){
-        // Display animation info 
-        document.getElementById('info').innerHTML="Round: " + round.toString() + " time: " + offset.toString() + " perimeter: " + str.length.toString();
-    
-        if(allign <= offset-roundOffset(round)){
-            allign -= 2;
+    // Display animation info 
+    document.getElementById('info').innerHTML=
+    "Genre: " + genre + 
+    ", Round: " + round.toString() + 
+    ", Limit: " + limit.toString() + 
+    ", Allign: " + allign.toString() + 
+    ", Offset: " + offset.toString() + 
+    ", Characters left: " + str.length.toString() + 
+    ", Radius: " + radius.toFixed(1).toString() +
+    ", Interval: " + ((round+1)*interval).toFixed(2).toString();
+
+
+     if (Math.floor((time-start)/span) - offset == 1){
+   
+        if (allign <= offset-roundOffset(round)){
+            allign = calcAllign(radius);
             round++;
-            ctx.font = (fontSize-round*.4).toString() + 'pt serif';
-            ctx.fillStyle = colors[round%32];
+            ctx.font = (fontSize-round*fontReduc).toString() + 'pt serif';
+            ctx.fillStyle = colors[round%8];
         }
-        ctx.rotate(angle / allign);
+        if (limit < round+1 || radius < 77){
+            str = str.substring(offset, str.length);
+            canvasInit();
+        }
+            
+        ctx.rotate(2 * Math.PI / allign);
         ctx.save();
         ctx.translate(0, -1 * radius);
         ctx.fillText(str[offset], 0, 0);
         ctx.restore();
-        radius -= 0.1 + 0.001*round;
+        radius -= (round+1)*interval;
         offset++;
     }
 
@@ -109,8 +164,8 @@ function animate() {
     }
 }
 
-function roundOffset(n){
-    if(n==0)
+function roundOffset(n) {
+    if (n==0)
         return 0;
     else
         return roundOffset(n-1) + 200 - 10*(n-1);
