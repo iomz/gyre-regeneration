@@ -16,7 +16,7 @@ window.requestAnimFrame = (function(){
         };
 })();
 
-var canvas1, canvas2, ctx1, ctx2, outerRad, span, fontSize1, fontSize2, fontReduc;
+var canvas1, canvas2, canvas3, ctx1, ctx2, ctx3, outerRad, span, fontSize1, fontSize2, fontReduc, centerX, centerY;
 var radius1, radius2, start, offset, round1, round2, allign1, interval1, interval2, limit1, limit2;
 var audio, ogg, mp3;
 var list = ['regeneration','meme','nuclear','brain','technology','universe'];
@@ -32,8 +32,9 @@ animate();
 function init() {
     var width = 1280;
     var height = 1024;
-    var centerX = 800/2*Math.random()+800/4;
-    var centerY = 600/3*Math.random()+600/3;
+    centerX = 800/2*Math.random()+800/4;
+    centerY = 600/3*Math.random()+600/3;
+
     canvas1 = document.createElement('canvas');
     canvas1.width = width;
     canvas1.height = height;
@@ -41,7 +42,7 @@ function init() {
     ctx1 = canvas1.getContext('2d');
     ctx1.translate(centerX, centerY);
     document.body.appendChild(canvas1);
-    
+
     canvas2 = document.createElement('canvas');
     canvas2.width = width;
     canvas2.height = height;
@@ -49,6 +50,14 @@ function init() {
     ctx2 = canvas2.getContext('2d');
     ctx2.translate(centerX, centerY);
     document.body.appendChild(canvas2);
+    
+    canvas3 = document.createElement('canvas');
+    canvas3.width = width;
+    canvas3.height = height;
+    canvas3.style="position: absolute; z-index: 2";
+    ctx3 = canvas3.getContext('2d');
+    ctx3.translate(centerX-30, centerY);
+    document.body.appendChild(canvas3);
 
     // Black and white gradation array
     for(var i=7; 0<=i; i--){
@@ -63,7 +72,7 @@ function init() {
     str = getString('data/'+genre);
 
     // Text printing speed
-    span = 100;
+    span = 50;
 
     // Initial radius
     outerRad = 400;
@@ -83,16 +92,18 @@ function canvasInit() {
     // Initialize the white color
     ctx1.fillStyle = '#FFFFFF';
     ctx2.fillStyle = '#FFFFFF';
+    ctx3.fillStyle = '#FFFFFF';
 
     // Font initialization
     fontSize1 = Math.floor(8*Math.random() + 8);
     ctx1.font = fontSize1.toString() + 'pt serif';
     fontSize2 = Math.floor(8*Math.random() + 8);
     ctx2.font = fontSize2.toString() + 'pt serif';
+    ctx3.font = "20pt serif";
 
     // Interval initialization
-    interval1 = 0.6*Math.random() + 0.2;
-    interval2 = 0.6*Math.random() + 0.2;
+    interval1 = Math.random() + 0.2;
+    interval2 = Math.random() + 0.2;
  
     // Outmost radian for the spiral
     //outerRad -= 10*Math.random() + fontSize;
@@ -146,20 +157,18 @@ function audioInit(){
 function animate() {
     //var time = new Date().getTime();
     var time = window.performance.now ? window.performance.now() : new Date().getTime();
+
     // Display animation info 
     document.getElementById('info').innerHTML=
     "Genre: " + genre + 
-    ", Round: " + round1.toString() + 
-    ", Limit: " + limit1.toString() + 
-    ", Allign: " + allign1.toString() + 
-    ", Offset: " + offset.toString() + 
-    ", Characters left: " + str.length.toString() + 
-    ", Radius: " + radius1.toFixed(1).toString() +
-    ", Interval: " + ((round1+1)*interval1).toFixed(2).toString();
+    //", Characters left: " + (str.length - offset).toString() + 
+    //", Radius: " + radius1.toFixed(1).toString() + " " + radius2.toFixed(1).toString() +
+    ", Intervals: " + ((round1+1)*interval1).toFixed(2).toString() + " " + ((round2+1)*interval2).toFixed(2).toString();
 
-
-     if (Math.ceil((time-start)/span) - offset == 1){
-   
+    if (Math.ceil((time-start)/span) - offset == 1){
+        ctx3.clearRect(-50,-50,150,100);
+        ctx3.fillText((str.length - offset - 1).toString(),0,0);
+ 
         if (allign1 <= offset-roundOffset(round1)){
             allign1 = calcAllign(radius1, fontSize1);
             round1++;
@@ -194,7 +203,7 @@ function animate() {
         offset++;
     }
 
-    if (offset+1 < str.length) {
+    if (offset < str.length) {
         requestAnimFrame(animate);
     }
 }
