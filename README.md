@@ -8,5 +8,7 @@ The original was coded with flash, but I decided to replicate it by HTML5 with J
 Live demo: http://web.sfc.wide.ad.jp/~iomz/gyre/
 
 ## Todo
-- Multiple spirals
-- Transparent multiple canvas for fading out effects
+- Fading out effects
+- Dynamic audio file production
+-- ogg and mp3 conversion
+- Realtime text search on the web and quote a certain length

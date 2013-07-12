@@ -16,8 +16,8 @@ window.requestAnimFrame = (function(){
         };
 })();
 
-var canvas, ctx, outerRad, span, interval, fondSize, fontReduc, limit;
-var radius, start, offset, round, allign;
+var canvas1, canvas2, ctx1, ctx2, outerRad, span, fontSize1, fontSize2, fontReduc;
+var radius1, radius2, start, offset, round1, round2, allign1, interval1, interval2, limit1, limit2;
 var audio, ogg, mp3;
 var list = ['regeneration','meme','nuclear','brain','technology','universe'];
 var genre = list[Math.floor(Math.random()*list.length)];
@@ -30,12 +30,25 @@ audioInit();
 animate();
 
 function init() {
-    canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 600;
-    ctx = canvas.getContext('2d');
-    ctx.translate(canvas.width/2*Math.random()+canvas.width/4, canvas.height/3*Math.random()+canvas.height/3);
-    document.body.appendChild(canvas);
+    var width = 1280;
+    var height = 1024;
+    var centerX = 800/2*Math.random()+800/4;
+    var centerY = 600/3*Math.random()+600/3;
+    canvas1 = document.createElement('canvas');
+    canvas1.width = width;
+    canvas1.height = height;
+    canvas1.style="position: absolute; z-index: 0";
+    ctx1 = canvas1.getContext('2d');
+    ctx1.translate(centerX, centerY);
+    document.body.appendChild(canvas1);
+    
+    canvas2 = document.createElement('canvas');
+    canvas2.width = width;
+    canvas2.height = height;
+    canvas2.style="position: absolute; z-index: 1";
+    ctx2 = canvas2.getContext('2d');
+    ctx2.translate(centerX, centerY);
+    document.body.appendChild(canvas2);
 
     // Black and white gradation array
     for(var i=7; 0<=i; i--){
@@ -49,11 +62,8 @@ function init() {
     // Load string
     str = getString('data/'+genre);
 
-    // Limit for respawn
-    limit = 5;
-
     // Text printing speed
-    span = 50;
+    span = 100;
 
     // Initial radius
     outerRad = 400;
@@ -64,49 +74,59 @@ function init() {
 
 function canvasInit() {
     // Canvas setup
-    ctx.rotate(2*Math.PI*Math.random());
+    ctx1.rotate(2*Math.PI*Math.random());
+    ctx2.rotate(2*Math.PI*Math.random());
     offset = 0;
-    round = 0;
+    round1 = 0;
+    round2 = 0;
 
     // Initialize the white color
-    ctx.fillStyle = '#FFFFFF';
+    ctx1.fillStyle = '#FFFFFF';
+    ctx2.fillStyle = '#FFFFFF';
 
     // Font initialization
-    fontSize = Math.floor(8*Math.random() + 8);
-    ctx.font = fontSize.toString() + 'pt serif';
+    fontSize1 = Math.floor(8*Math.random() + 8);
+    ctx1.font = fontSize1.toString() + 'pt serif';
+    fontSize2 = Math.floor(8*Math.random() + 8);
+    ctx2.font = fontSize2.toString() + 'pt serif';
 
     // Interval initialization
-    interval = 0.6*Math.random() + 0.2;
+    interval1 = 0.6*Math.random() + 0.2;
+    interval2 = 0.6*Math.random() + 0.2;
  
     // Outmost radian for the spiral
     //outerRad -= 10*Math.random() + fontSize;
     //radius = outerRad;
-    radius = outerRad*Math.random() + 200;
+    radius1 = outerRad*Math.random() + 200;
+    radius2 = outerRad*Math.random() + 200;
 
     // Number of characters on one round
-    allign = calcAllign(radius);
+    allign1 = calcAllign(radius1, fontSize1);
+    allign2 = calcAllign(radius2, fontSize2);
 
-    limit = calcLimit();
+    limit1 = calcLimit(radius1, interval1, fontSize1);
+    limit2 = calcLimit(radius2, interval2, fontSize2);
 
-    ctx.save();
+    ctx1.save();
+    ctx2.save();
 
-    start = new Date().getTime();
+    start = window.performance.now ? window.performance.now() : new Date().getTime();
 }
 
-function calcAllign(r) {
-    return Math.floor(2 * Math.PI * r / fontSize);
+function calcAllign(r, fs) {
+    return Math.floor(2 * Math.PI * r / fs);
 }
 
-function calcLimit() {
+function calcLimit(radius, interval, fs) {
     var r = radius;
     var rc = 1;
     do {
-        for(var i=0; i<calcAllign(r); i++){
+        for(var i=0; i<calcAllign(r, fs); i++){
             r -= (rc+1)*interval;
             if (r<100) return rc;
         }
         rc++;
-    } while (100<calcAllign(r));
+    } while (100<calcAllign(r, fs));
     return rc;
 }
 
@@ -124,38 +144,53 @@ function audioInit(){
 }
 
 function animate() {
-    var time = new Date().getTime();
+    //var time = new Date().getTime();
+    var time = window.performance.now ? window.performance.now() : new Date().getTime();
     // Display animation info 
     document.getElementById('info').innerHTML=
     "Genre: " + genre + 
-    ", Round: " + round.toString() + 
-    ", Limit: " + limit.toString() + 
-    ", Allign: " + allign.toString() + 
+    ", Round: " + round1.toString() + 
+    ", Limit: " + limit1.toString() + 
+    ", Allign: " + allign1.toString() + 
     ", Offset: " + offset.toString() + 
     ", Characters left: " + str.length.toString() + 
-    ", Radius: " + radius.toFixed(1).toString() +
-    ", Interval: " + ((round+1)*interval).toFixed(2).toString();
+    ", Radius: " + radius1.toFixed(1).toString() +
+    ", Interval: " + ((round1+1)*interval1).toFixed(2).toString();
 
 
-     if (Math.floor((time-start)/span) - offset == 1){
+     if (Math.ceil((time-start)/span) - offset == 1){
    
-        if (allign <= offset-roundOffset(round)){
-            allign = calcAllign(radius);
-            round++;
-            ctx.font = (fontSize-round*fontReduc).toString() + 'pt serif';
-            ctx.fillStyle = colors[round%8];
+        if (allign1 <= offset-roundOffset(round1)){
+            allign1 = calcAllign(radius1, fontSize1);
+            round1++;
+            ctx1.font = (fontSize1-round1*fontReduc).toString() + 'pt serif';
+            ctx1.fillStyle = colors[round1%8];
         }
-        if (limit < round+1 || radius < 77){
+        if (allign2 <= offset-roundOffset(round2)){
+            allign2 = calcAllign(radius2, fontSize2);
+            round2++;
+            ctx2.font = (fontSize2-round2*fontReduc).toString() + 'pt serif';
+            ctx2.fillStyle = colors[round2%8];
+        }
+        if (limit1 < round1+1 || limit2 < round2+1 || radius1 < 77 || radius2 < 77){
             str = str.substring(offset, str.length);
             canvasInit();
         }
             
-        ctx.rotate(2 * Math.PI / allign);
-        ctx.save();
-        ctx.translate(0, -1 * radius);
-        ctx.fillText(str[offset], 0, 0);
-        ctx.restore();
-        radius -= (round+1)*interval;
+        ctx1.rotate(2 * Math.PI / allign1);
+        ctx1.save();
+        ctx1.translate(0, -1 * radius1);
+        ctx1.fillText(str[offset], 0, 0);
+        ctx1.restore();
+        radius1 -= (round1+1)*interval1;
+
+        ctx2.rotate(2 * Math.PI / allign2);
+        ctx2.save();
+        ctx2.translate(0, -1 * radius2);
+        ctx2.fillText(str[offset], 0, 0);
+        ctx2.restore();
+        radius2 -= (round2+1)*interval2;
+        
         offset++;
     }
 
