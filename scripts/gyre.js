@@ -17,7 +17,7 @@ window.requestAnimFrame = (function(){
 })();
 
 var canvas1, canvas2, canvas3, ctx1, ctx2, ctx3, outerRad, span, fontSize1, fontSize2, fontReduc, centerX, centerY;
-var radius1, radius2, start, offset, round1, round2, allign1, interval1, interval2, limit1, limit2;
+var radius1, radius2, outerRad1, outerRad2, start, offset, round1, round2, allign1, interval1, interval2, limit1, limit2;
 var audio, ogg, mp3;
 var list = ['regeneration','meme','nuclear','brain','technology','universe'];
 var genre = list[Math.floor(Math.random()*list.length)];
@@ -56,7 +56,7 @@ function init() {
     canvas3.height = height;
     canvas3.style="position: absolute; z-index: 2";
     ctx3 = canvas3.getContext('2d');
-    ctx3.translate(centerX-30, centerY);
+    ctx3.translate(centerX-26, centerY);
     document.body.appendChild(canvas3);
 
     // Black and white gradation array
@@ -95,9 +95,9 @@ function canvasInit() {
     ctx3.fillStyle = '#FFFFFF';
 
     // Font initialization
-    fontSize1 = Math.floor(8*Math.random() + 8);
+    fontSize1 = Math.floor(10*Math.random() + 3);
     ctx1.font = fontSize1.toString() + 'pt serif';
-    fontSize2 = Math.floor(8*Math.random() + 8);
+    fontSize2 = Math.floor(10*Math.random() + 3);
     ctx2.font = fontSize2.toString() + 'pt serif';
     ctx3.font = "20pt serif";
 
@@ -108,8 +108,10 @@ function canvasInit() {
     // Outmost radian for the spiral
     //outerRad -= 10*Math.random() + fontSize;
     //radius = outerRad;
-    radius1 = outerRad*Math.random() + 200;
-    radius2 = outerRad*Math.random() + 200;
+    radius1 = outerRad*3/4*Math.random() + outerRad/2;
+    outerRad1 = radius1;
+    radius2 = outerRad*3/4*Math.random() + outerRad/2;
+    outerRad2 = radius2;
 
     // Number of characters on one round
     allign1 = calcAllign(radius1, fontSize1);
@@ -173,19 +175,18 @@ function animate() {
             allign1 = calcAllign(radius1, fontSize1);
             round1++;
             ctx1.font = (fontSize1-round1*fontReduc).toString() + 'pt serif';
-            ctx1.fillStyle = colors[round1%8];
         }
         if (allign2 <= offset-roundOffset(round2)){
             allign2 = calcAllign(radius2, fontSize2);
             round2++;
             ctx2.font = (fontSize2-round2*fontReduc).toString() + 'pt serif';
-            ctx2.fillStyle = colors[round2%8];
         }
         if (limit1 < round1+1 || limit2 < round2+1 || radius1 < 77 || radius2 < 77){
             str = str.substring(offset, str.length);
             canvasInit();
         }
             
+        ctx1.fillStyle = getColor(radius1);
         ctx1.rotate(2 * Math.PI / allign1);
         ctx1.save();
         ctx1.translate(0, -1 * radius1);
@@ -193,6 +194,7 @@ function animate() {
         ctx1.restore();
         radius1 -= (round1+1)*interval1;
 
+        ctx2.fillStyle = getColor(radius2);
         ctx2.rotate(2 * Math.PI / allign2);
         ctx2.save();
         ctx2.translate(0, -1 * radius2);
@@ -208,6 +210,18 @@ function animate() {
     }
 }
 
+function getColor(r) {
+    if(outerRad*10/16 < r) return colors[0];
+    else if(outerRad*8/16 < r) return colors[1];
+    else if(outerRad*7/16 < r) return colors[2];
+    else if(outerRad*6/16 < r) return colors[3];
+    else if(outerRad*5/16 < r) return colors[4];
+    else if(outerRad*4/16 < r) return colors[5];
+    else if(outerRad*3/16 < r) return colors[6];
+    else return colors[7];
+}
+
+// Need to fix the algorithm based on calc allign
 function roundOffset(n) {
     if (n==0)
         return 0;
